@@ -34,8 +34,41 @@ for (var i = 1; i < 8; i++) {
     ).addTo(map);
 }
 
-map.on("click", function(event) {
-    L.circle(event.latlng, { radius: 100 }).addTo(map);
+// click-drag
+var startCircle = null;
+var endCircle = null;
+var line = null;
+var dragging = false;
+
+map.on("mousedown", function(event) {
+    map.dragging.disable();
+    dragging = true;
+    if (startCircle) {
+        startCircle.remove();
+    }
+    if (endCircle) {
+        endCircle.remove();
+    }
+    if (line) {
+        line.remove();
+    }
+    startCircle = L.circle(event.latlng, { radius: 100, color: "white" });
+    startCircle.addTo(map);
+});
+map.on("mouseup", function(event) {
+    endCircle = L.circle(event.latlng, { radius: 100, color: "white" });
+    endCircle.addTo(map);
+    map.dragging.enable();
+    dragging = false;
+});
+map.on("mousemove", function(event) {
+    if (dragging) {
+        if (line) {
+            line.remove();
+        }
+        line = L.polyline([startCircle.getLatLng(), event.latlng], { color: "white" });
+        line.addTo(map);
+    }
 });
 
 // pick a zone
