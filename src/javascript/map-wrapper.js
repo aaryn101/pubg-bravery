@@ -2,12 +2,13 @@ import Erangel from '../images/erangel.jpg'
 import ResetBtn from './reset-btn'
 import RollBtn from './roll-btn'
 
-var MAP_WIDTH_PX = 5184;
-var MAP_WIDTH_METERS = 8000;
-var PPM = MAP_WIDTH_PX / MAP_WIDTH_METERS;
-var BOUNDS = [[0, 0], [MAP_WIDTH_PX, MAP_WIDTH_PX]];
+// map constants
+const MAP_WIDTH_PX = 5184;
+const MAP_WIDTH_METERS = 8000;
+const PPM = MAP_WIDTH_PX / MAP_WIDTH_METERS;
+const BOUNDS = [[0, 0], [MAP_WIDTH_PX, MAP_WIDTH_PX]];
 
-var startCircle = null;
+let startCircle = null;
 var dragLine = null;
 var pathLine = null;
 var dragging = false;
