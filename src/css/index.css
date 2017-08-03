@@ -1,0 +1,30 @@
+#map-erangel {
+    height: 800px;
+}
+
+.reset-icon {
+    background-image: url("../images/reset-icon.png");
+    background-size: 40px;
+    background-position-x: -4px;
+}
+
+.roll-icon {
+    background-image: url("../images/roll-icon.png");
+    background-size: 28px;
+    background-position-x: 1px;
+    background-position-y: 2px;
+}
+
+.roll-icon, .reset-icon {
+    width: 30px;
+    height: 30px;
+    background-color: white;
+    background-repeat: no-repeat;
+    border: 2px solid #A9A9A9;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.roll-icon:hover, .reset-icon:hover {
+    background-color: rgb(245,245,245);
+}
