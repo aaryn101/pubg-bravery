@@ -1,4 +1,5 @@
 import Erangel from '../images/erangel.jpg'
+import Logo from './controls/logo'
 import ResetBtn from './controls/reset-btn'
 import RollBtn from './controls/roll-btn'
 import SizeBtn from './controls/size-btn'
@@ -65,8 +66,15 @@ var buildMap = function(containerId) {
 
     map.showHelpText()
     map.enableClickAndDrag()
+    new Logo({ position: 'bottomleft' }).addTo(map)
     new ResetBtn({ position: 'topleft' }).addTo(map)
     new SizeBtn({ position: 'topright' }).addTo(map)
+
+    var attribution = L.control.attribution({
+        prefix: '<div id="attribution"><p>Created by <a href="https://github.com/aaryn101">aaryn101</a></p>' +
+            '<p>PLAYERUNKNOWN\'S BATTLEGROUNDS, logo, map & text are the property of Bluehole, Inc.</p></div>'
+    })
+    attribution.addTo(map)
 
     map.showMarkerLines()
     map.fitBounds(BOUNDS)

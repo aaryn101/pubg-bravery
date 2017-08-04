@@ -7,9 +7,12 @@ var body = document.body,
     html = document.documentElement
 var height = Math.max( body.scrollHeight, body.offsetHeight, 
                        html.clientHeight, html.scrollHeight, html.offsetHeight )
+                      
+const mapHeight = height
+
 var mapContainer = document.createElement('div')
 mapContainer.id = 'map-erangel'
-mapContainer.style = "height: " + height + "px"
+mapContainer.style = 'height: ' + mapHeight + 'px'
 body.appendChild(mapContainer)
 
 var map = MapWrapper(mapContainer.id)
