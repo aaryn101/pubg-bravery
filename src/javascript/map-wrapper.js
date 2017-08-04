@@ -55,20 +55,22 @@ var buildMap = function(containerId) {
 var _showMarkerLines = function() {
     var map = this
 
-    // make vertical lines
-    for (var i = 1; i < 8; i++) {
-        var line = L.polyline([ [0, i * 1000 * PPM], [MAP_WIDTH_PX, i * 1000 * PPM] ],
-            { color: "yellow", weight: 1 });
-        line.addTo(map);
-        markerLines.push(line);
-    }
+    if (markerLines.length === 0) {
+        // make vertical lines
+        for (var i = 1; i < 8; i++) {
+            var line = L.polyline([ [0, i * 1000 * PPM], [MAP_WIDTH_PX, i * 1000 * PPM] ],
+                { color: "yellow", weight: 1 });
+            line.addTo(map);
+            markerLines.push(line);
+        }
 
-    // make horizontal lines
-    for (var i = 1; i < 8; i++) {
-        var line = L.polyline([ [i * 1000 * PPM, 0], [i * 1000 * PPM, MAP_WIDTH_PX] ],
-            { color: "yellow", weight: 1 });
-        line.addTo(map);
-        markerLines.push(line);
+        // make horizontal lines
+        for (var i = 1; i < 8; i++) {
+            var line = L.polyline([ [i * 1000 * PPM, 0], [i * 1000 * PPM, MAP_WIDTH_PX] ],
+                { color: "yellow", weight: 1 });
+            line.addTo(map);
+            markerLines.push(line);
+        }
     }
 }
 
@@ -306,10 +308,12 @@ var _hardReset = function() {
         dropCircle.remove();
         dropCircle = null;
     }
+    if (map.rollBtnControl) {
+        map.rollBtnControl.remove()
+    }
 
     map.showMarkerLines()
     map.showHelpText()
-    map.rollBtnControl.remove()
     dragging = false
     map.fitBounds(BOUNDS)
 }
