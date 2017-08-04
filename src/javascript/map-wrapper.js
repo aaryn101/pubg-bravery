@@ -1,6 +1,8 @@
 import Erangel from '../images/erangel.jpg'
 import ResetBtn from './reset-btn'
 import RollBtn from './roll-btn'
+import SizeBtn from './size-btn'
+import HelpText from './help-text'
 
 // map constants
 const MAP_WIDTH_PX = 5184;
@@ -15,6 +17,7 @@ var dragging = false;
 var longRangePolygons = null;
 var medRangePolygons = null;
 var dropCircle = null;
+var markerLines = [];
 
 var buildMap = function(containerId) {
     var map = L.map(containerId, {
@@ -26,42 +29,53 @@ var buildMap = function(containerId) {
     });
 
     L.imageOverlay(Erangel, BOUNDS).addTo(map);
-    
-    // make vertical lines
-    for (var i = 1; i < 8; i++) {
-        L.polyline(
-            [ [0, i * 1000 * PPM], [MAP_WIDTH_PX, i * 1000 * PPM] ],
-            { 
-                color: "yellow",
-                weight: 1,
-            }
-        ).addTo(map);
-    }
-
-    // make horizontal lines
-    for (var i = 1; i < 8; i++) {
-        L.polyline(
-            [ [i * 1000 * PPM, 0], [i * 1000 * PPM, MAP_WIDTH_PX] ],
-            { 
-                color: "yellow",
-                weight: 1,
-            }
-        ).addTo(map);
-    }
 
     map.on('mousedown', _onMouseDown)
     map.on('mouseup', _onMouseUp)
     map.on('mousemove', _onMouseMove)
     map.rollDropZone = _rollDropZone.bind(map)
     map.softReset = _softReset.bind(map)
-    map.hardReset = _hardReset.bind(map)
+    map.hardReset = _hardReset.bind(map)    
+    map.showMarkerLines = _showMarkerLines.bind(map)
+    map.hideMarkerLines = _hideMarkerLines.bind(map)
+    map.dropSize = 250
 
     new ResetBtn({ position: 'topleft' }).addTo(map);
+    new HelpText({ position: 'topright' }).addTo(map);
+    new SizeBtn({ position: 'topright' }).addTo(map);
 
+    map.showMarkerLines()
     map.fitBounds(BOUNDS)
 
     return map
-};
+}
+
+var _showMarkerLines = function() {
+    var map = this
+
+    // make vertical lines
+    for (var i = 1; i < 8; i++) {
+        var line = L.polyline([ [0, i * 1000 * PPM], [MAP_WIDTH_PX, i * 1000 * PPM] ],
+            { color: "yellow", weight: 1 });
+        line.addTo(map);
+        markerLines.push(line);
+    }
+
+    // make horizontal lines
+    for (var i = 1; i < 8; i++) {
+        var line = L.polyline([ [i * 1000 * PPM, 0], [i * 1000 * PPM, MAP_WIDTH_PX] ],
+            { color: "yellow", weight: 1 });
+        line.addTo(map);
+        markerLines.push(line);
+    }
+}
+
+var _hideMarkerLines = function() {
+    for (var i = 0; i < markerLines.length; i++) {
+        markerLines[i].remove()
+    }
+    markerLines = []
+}
 
 var _rollDropZone = function() {
     var map = this;
@@ -97,7 +111,7 @@ var _rollDropZone = function() {
     }
     
     var randomPoint = getRandomPoint(longRangePolygons);
-    dropCircle = L.circle(randomPoint, { radius: 250 * PPM, color: "red" });
+    dropCircle = L.circle(randomPoint, { radius: map.dropSize * PPM, color: "red" });
     dropCircle.addTo(map);
 
     return randomPoint;
@@ -190,6 +204,7 @@ var _onMouseUp = function(event) {
 
     var randomPoint = map.rollDropZone();
     map.setView(randomPoint, -2, { animate: true, duration: 1.0 });
+    map.hideMarkerLines()
 
     if (!map.rollBtnControl) {
         new RollBtn({ position: 'topleft' }).addTo(map);
@@ -270,6 +285,7 @@ var _hardReset = function() {
         dropCircle = null;
     }
 
+    map.showMarkerLines()
     map.rollBtnControl.remove()
     dragging = false
     map.fitBounds(BOUNDS)
