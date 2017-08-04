@@ -1,8 +1,8 @@
 import Erangel from '../images/erangel.jpg'
-import ResetBtn from './reset-btn'
-import RollBtn from './roll-btn'
-import SizeBtn from './size-btn'
-import HelpText from './help-text'
+import ResetBtn from './controls/reset-btn'
+import RollBtn from './controls/roll-btn'
+import SizeBtn from './controls/size-btn'
+import HelpText from './controls/help-text'
 
 // map constants
 const MAP_WIDTH_PX = 5184;
@@ -38,10 +38,12 @@ var buildMap = function(containerId) {
     map.hardReset = _hardReset.bind(map)    
     map.showMarkerLines = _showMarkerLines.bind(map)
     map.hideMarkerLines = _hideMarkerLines.bind(map)
+    map.showHelpText = _showHelpText.bind(map)
+    map.hideHelpText = _hideHelpText.bind(map)
     map.dropSize = 250
 
+    map.showHelpText()
     new ResetBtn({ position: 'topleft' }).addTo(map);
-    new HelpText({ position: 'topright' }).addTo(map);
     new SizeBtn({ position: 'topright' }).addTo(map);
 
     map.showMarkerLines()
@@ -75,6 +77,25 @@ var _hideMarkerLines = function() {
         markerLines[i].remove()
     }
     markerLines = []
+}
+
+var _showHelpText = function() {
+    var map = this
+
+    if (map.helpText) {
+        map.helpText.show()
+    }
+    else {
+        new HelpText({ position: 'topright' }).addTo(map)
+    }
+}
+
+var _hideHelpText = function() {
+    var map = this
+
+    if (map.helpText) {
+        map.helpText.hide()
+    }
 }
 
 var _rollDropZone = function() {
@@ -205,6 +226,7 @@ var _onMouseUp = function(event) {
     var randomPoint = map.rollDropZone();
     map.setView(randomPoint, -2, { animate: true, duration: 1.0 });
     map.hideMarkerLines()
+    map.hideHelpText();
 
     if (!map.rollBtnControl) {
         new RollBtn({ position: 'topleft' }).addTo(map);
@@ -286,6 +308,7 @@ var _hardReset = function() {
     }
 
     map.showMarkerLines()
+    map.showHelpText()
     map.rollBtnControl.remove()
     dragging = false
     map.fitBounds(BOUNDS)

@@ -6,9 +6,17 @@ L.Control.HelpText = L.Control.extend({
         text.innerHTML = '<p>Click and drag on the map to begin.</p>' + 
                          '<p>You can change the drop zone size using the controls on the right.</p>'
 
+        map.helpText = this
+        this.el = text
         return text
     },
-    onRemove: function(map) { }
+    onRemove: function(map) { },
+    show: function() {
+        L.DomUtil.removeClass(this.el, 'hidden')
+    },
+    hide: function() {
+        L.DomUtil.addClass(this.el, 'hidden')
+    }
 })
 
 export default function(opts) {

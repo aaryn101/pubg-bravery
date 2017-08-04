@@ -80,3 +80,7 @@
 .help-text p:last-child {
     margin-bottom: 0px;
 }
+
+.hidden {
+    display: none;
+}

@@ -13,4 +13,3 @@ mapContainer.style = "height: " + height + "px"
 body.appendChild(mapContainer)
 
 var map = MapWrapper(mapContainer.id)
-        
