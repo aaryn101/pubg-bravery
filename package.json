@@ -8,6 +8,7 @@
     "build-prod": "webpack -p",
     "watch": "webpack --watch",
     "start": "webpack-dev-server --open",
+    "heroku-prebuild": "npm install --only=dev",
     "heroku-postbuild": "webpack -p --progress"
   },
   "repository": {
