@@ -7,7 +7,8 @@
     "build": "webpack",
     "build-prod": "webpack -p",
     "watch": "webpack --watch",
-    "start": "webpack-dev-server --open",
+    "start:dev": "webpack-dev-server --open",
+    "start": "http-server ./dist",
     "heroku-prebuild": "npm install --only=dev",
     "heroku-postbuild": "webpack -p --progress"
   },
@@ -35,6 +36,7 @@
     "webpack-dev-server": "^2.6.1"
   },
   "dependencies": {
+    "http-server": "^0.10.0",
     "leaflet": "^1.1.0"
   }
 }
