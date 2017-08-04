@@ -22,6 +22,14 @@ L.Control.SizeBtn = L.Control.extend({
                 for (var i = 0; i < others.length; i++) {
                     L.DomUtil.removeClass(others[i], 'selected')
                 }
+
+                if (map.isPathSelected()) {
+                    map.softReset()
+                    var randomPoint = map.rollDropZone()
+                    window.setTimeout(function() {
+                        map.setView(randomPoint, -2, { animate: true, duration: 1.0 });
+                    }, 500)
+                }
             })
         }
 

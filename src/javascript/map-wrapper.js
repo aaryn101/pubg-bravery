@@ -51,6 +51,7 @@ var buildMap = function(containerId) {
     map.on('mousedown', _onMouseDown)
     map.on('mouseup', _onMouseUp)
     map.on('mousemove', _onMouseMove)
+    map.isPathSelected = _isPathSelected.bind(map)
     map.disableClickAndDrag = _disableClickAndDrag.bind(map)
     map.enableClickAndDrag = _enableClickAndDrag.bind(map)
     map.rollDropZone = _rollDropZone.bind(map)
@@ -71,6 +72,10 @@ var buildMap = function(containerId) {
     map.fitBounds(BOUNDS)
 
     return map
+}
+
+var _isPathSelected = function() {
+    return !!longRangePolygons
 }
 
 var _disableClickAndDrag = function() {
