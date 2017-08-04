@@ -43,12 +43,16 @@ var buildMap = function(containerId) {
         minZoom: -2.75,
         zoomDelta: 1
     })
+    map.getRenderer(map).options.padding = 1
 
-    L.imageOverlay(Erangel, BOUNDS).addTo(map)
+    var overlay = L.imageOverlay(Erangel, BOUNDS)
+    overlay.addTo(map)
 
     map.on('mousedown', _onMouseDown)
     map.on('mouseup', _onMouseUp)
     map.on('mousemove', _onMouseMove)
+    map.disableClickAndDrag = _disableClickAndDrag.bind(map)
+    map.enableClickAndDrag = _enableClickAndDrag.bind(map)
     map.rollDropZone = _rollDropZone.bind(map)
     map.softReset = _softReset.bind(map)
     map.hardReset = _hardReset.bind(map)    
@@ -59,6 +63,7 @@ var buildMap = function(containerId) {
     map.dropSize = 250
 
     map.showHelpText()
+    map.enableClickAndDrag()
     new ResetBtn({ position: 'topleft' }).addTo(map)
     new SizeBtn({ position: 'topright' }).addTo(map)
 
@@ -68,6 +73,14 @@ var buildMap = function(containerId) {
     return map
 }
 
+var _disableClickAndDrag = function() {
+    this._enableClickAndDrag = false
+}
+
+var _enableClickAndDrag = function() {
+    this._enableClickAndDrag = true
+}
+
 var _showMarkerLines = function() {
     var map = this
 
@@ -75,7 +88,7 @@ var _showMarkerLines = function() {
         // make vertical lines
         for (var i = 1; i < 8; i++) {
             var line = L.polyline([ [0, i * 1000 * PPM], [MAP_WIDTH_PX, i * 1000 * PPM] ],
-                { color: "yellow", weight: 1, noClip: true })
+                { color: "yellow", weight: 1 })
             line.addTo(map)
             markerLines.push(line)
         }
@@ -83,7 +96,7 @@ var _showMarkerLines = function() {
         // make horizontal lines
         for (var i = 1; i < 8; i++) {
             var line = L.polyline([ [i * 1000 * PPM, 0], [i * 1000 * PPM, MAP_WIDTH_PX] ],
-                { color: "yellow", weight: 1, noClip: true })
+                { color: "yellow", weight: 1 })
             line.addTo(map)
             markerLines.push(line)
         }
@@ -160,6 +173,10 @@ var _rollDropZone = function() {
 var _onMouseDown = function(event) {
     var map = this
 
+    if (!map._enableClickAndDrag) {
+        return
+    }
+
     map.dragging.disable()
     dragging = true
 
@@ -178,7 +195,7 @@ var _onMouseDown = function(event) {
 var _onMouseUp = function(event) {
     var map = this
 
-    if (!dragging) {
+    if (!map._enableClickAndDrag || !dragging) {
         return
     }
     var endLat = event.latlng.lat
@@ -239,13 +256,14 @@ var _onMouseUp = function(event) {
 
     longRangePolygons = buildPathPolygons(yLongRangeOffset, "blue")
     medRangePolygons = buildPathPolygons(yMedRangeOffset, "orange")
-    pathLine = L.polyline([[leftIntercept, 0], [rightIntercept, MAP_WIDTH_PX]], { color: "white", noClip: true })
+    pathLine = L.polyline([[leftIntercept, 0], [rightIntercept, MAP_WIDTH_PX]], { color: "white" })
     pathLine.addTo(map)
 
     var randomPoint = map.rollDropZone()
     map.setView(randomPoint, -2, { animate: true, duration: 0.5 })
     map.hideMarkerLines()
     map.hideHelpText()
+    map.disableClickAndDrag()
 
     if (!map.rollBtnControl) {
         new RollBtn({ position: 'topleft' }).addTo(map)
@@ -329,6 +347,7 @@ var _hardReset = function() {
 
     map.showMarkerLines()
     map.showHelpText()
+    map.enableClickAndDrag()
     dragging = false
     map.fitBounds(BOUNDS)
 }
