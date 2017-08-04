@@ -5,19 +5,35 @@ import SizeBtn from './controls/size-btn'
 import HelpText from './controls/help-text'
 
 // map constants
-const MAP_WIDTH_PX = 5184;
-const MAP_WIDTH_METERS = 8000;
-const PPM = MAP_WIDTH_PX / MAP_WIDTH_METERS;
-const BOUNDS = [[0, 0], [MAP_WIDTH_PX, MAP_WIDTH_PX]];
+const MAP_WIDTH_PX = 5184
+const MAP_WIDTH_METERS = 8000
+const PPM = MAP_WIDTH_PX / MAP_WIDTH_METERS
+const BOUNDS = [[0, 0], [MAP_WIDTH_PX, MAP_WIDTH_PX]]
 
-let startCircle = null;
-var dragLine = null;
-var pathLine = null;
-var dragging = false;
-var longRangePolygons = null;
-var medRangePolygons = null;
-var dropCircle = null;
-var markerLines = [];
+// manually created polygon that approximates the land area of the map
+const VALID_DROP_ZONES = L.polygon(
+    [
+        [ 
+            [2000 * PPM, 800 * PPM], [3000 * PPM, 300 * PPM], [4000 * PPM, 700 * PPM], 
+            [5300 * PPM, 700 * PPM], [5500 * PPM, 1400 * PPM], [6500 * PPM, 300 * PPM], 
+            [7200 * PPM, 300 * PPM], [7200 * PPM, 4000 * PPM], [7800 * PPM, 5500 * PPM], 
+            [7500 * PPM, 7000 * PPM], [4100 * PPM, 7200 * PPM], [4100 * PPM, 7600 * PPM],
+            [3200 * PPM, 7600 * PPM], [2500 * PPM, 6500 * PPM], [2900 * PPM, 5900 * PPM],
+            [2700 * PPM, 5600 * PPM], [2000 * PPM, 6400 * PPM], [700 * PPM, 6000 * PPM],
+            [600 * PPM, 3500 * PPM], [1600 * PPM, 2600 * PPM], [2200 * PPM, 3000 * PPM], 
+            [2000 * PPM, 2300 * PPM], [1400 * PPM, 1600 * PPM]
+        ]
+    ]
+)
+
+let startCircle = null
+var dragLine = null
+var pathLine = null
+var dragging = false
+var longRangePolygons = null
+var medRangePolygons = null
+var dropCircle = null
+var markerLines = []
 
 var buildMap = function(containerId) {
     var map = L.map(containerId, {
@@ -26,9 +42,9 @@ var buildMap = function(containerId) {
         zoomSnap: 0.25,
         minZoom: -2.75,
         zoomDelta: 1
-    });
+    })
 
-    L.imageOverlay(Erangel, BOUNDS).addTo(map);
+    L.imageOverlay(Erangel, BOUNDS).addTo(map)
 
     map.on('mousedown', _onMouseDown)
     map.on('mouseup', _onMouseUp)
@@ -43,8 +59,8 @@ var buildMap = function(containerId) {
     map.dropSize = 250
 
     map.showHelpText()
-    new ResetBtn({ position: 'topleft' }).addTo(map);
-    new SizeBtn({ position: 'topright' }).addTo(map);
+    new ResetBtn({ position: 'topleft' }).addTo(map)
+    new SizeBtn({ position: 'topright' }).addTo(map)
 
     map.showMarkerLines()
     map.fitBounds(BOUNDS)
@@ -59,17 +75,17 @@ var _showMarkerLines = function() {
         // make vertical lines
         for (var i = 1; i < 8; i++) {
             var line = L.polyline([ [0, i * 1000 * PPM], [MAP_WIDTH_PX, i * 1000 * PPM] ],
-                { color: "yellow", weight: 1 });
-            line.addTo(map);
-            markerLines.push(line);
+                { color: "yellow", weight: 1, noClip: true })
+            line.addTo(map)
+            markerLines.push(line)
         }
 
         // make horizontal lines
         for (var i = 1; i < 8; i++) {
             var line = L.polyline([ [i * 1000 * PPM, 0], [i * 1000 * PPM, MAP_WIDTH_PX] ],
-                { color: "yellow", weight: 1 });
-            line.addTo(map);
-            markerLines.push(line);
+                { color: "yellow", weight: 1, noClip: true })
+            line.addTo(map)
+            markerLines.push(line)
         }
     }
 }
@@ -101,43 +117,44 @@ var _hideHelpText = function() {
 }
 
 var _rollDropZone = function() {
-    var map = this;
+    var map = this
 
     var polygonContainsPoint = function(point, polygon) {
-        var x = point[0];
-        var y = point[1];
-        var polyPoints = polygon.getLatLngs()[0];
+        var x = point[0]
+        var y = point[1]
+        var polyPoints = polygon.getLatLngs()[0]
 
-        var contains = false;
+        var contains = false
 
         for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
-            var xi = polyPoints[i].lat, yi = polyPoints[i].lng;
-            var xj = polyPoints[j].lat, yj = polyPoints[j].lng;
+            var xi = polyPoints[i].lat, yi = polyPoints[i].lng
+            var xj = polyPoints[j].lat, yj = polyPoints[j].lng
 
             var intersect = ((yi > y) != (yj > y))
-                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect) contains = !contains;
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+            if (intersect) contains = !contains
         }
 
-        return contains;
-    };
+        return contains
+    }
     var getRandomPoint = function(polygons) {
-        var x = Math.floor(Math.random() * MAP_WIDTH_PX);
-        var y = Math.floor(Math.random() * MAP_WIDTH_PX);
+        var x = Math.floor(Math.random() * MAP_WIDTH_PX)
+        var y = Math.floor(Math.random() * MAP_WIDTH_PX)
 
-        if (polygonContainsPoint([y, x], polygons[0]) || polygonContainsPoint([y, x], polygons[1])) {
-            return [y, x];
+        if (polygonContainsPoint([y, x], VALID_DROP_ZONES) &&
+            (polygonContainsPoint([y, x], polygons[0]) || polygonContainsPoint([y, x], polygons[1]))) {
+            return [y, x]
         }
         else {
-            return getRandomPoint(polygons);
+            return getRandomPoint(polygons)
         }
     }
     
-    var randomPoint = getRandomPoint(longRangePolygons);
-    dropCircle = L.circle(randomPoint, { radius: map.dropSize * PPM, color: "red" });
-    dropCircle.addTo(map);
+    var randomPoint = getRandomPoint(longRangePolygons)
+    dropCircle = L.circle(randomPoint, { radius: map.dropSize * PPM, color: "red" })
+    dropCircle.addTo(map)
 
-    return randomPoint;
+    return randomPoint
 }
 
 var _onMouseDown = function(event) {
@@ -147,11 +164,11 @@ var _onMouseDown = function(event) {
     dragging = true
 
     if (startCircle) {
-        startCircle.remove();
+        startCircle.remove()
     }
 
     if (dragLine) {
-        dragLine.remove();
+        dragLine.remove()
     }
 
     startCircle = L.circle(event.latlng, { radius: 100, color: "white" })
@@ -162,36 +179,36 @@ var _onMouseUp = function(event) {
     var map = this
 
     if (!dragging) {
-        return;
+        return
     }
-    var endLat = event.latlng.lat;
-    var endLng = event.latlng.lng;
-    var startLat = startCircle.getLatLng().lat;
-    var startLng = startCircle.getLatLng().lng;
+    var endLat = event.latlng.lat
+    var endLng = event.latlng.lng
+    var startLat = startCircle.getLatLng().lat
+    var startLng = startCircle.getLatLng().lng
 
-    var slope = (endLat - startLat) / (endLng - startLng);
-    var b = endLat - (slope * endLng);
+    var slope = (endLat - startLat) / (endLng - startLng)
+    var b = endLat - (slope * endLng)
 
-    var leftIntercept = b;
-    var rightIntercept = MAP_WIDTH_PX * slope + b;
+    var leftIntercept = b
+    var rightIntercept = MAP_WIDTH_PX * slope + b
 
     var degToRad = function(deg) {
-        return deg * Math.PI / 180;
-    };
+        return deg * Math.PI / 180
+    }
     var radToDeg = function(rad) {
-        return rad * 180 / Math.PI;
-    };
+        return rad * 180 / Math.PI
+    }
 
-    var angle = radToDeg(Math.atan2(slope, 1));
-    var LONG_RANGE = 2200 * PPM;
-    var MED_RANGE = 1300 * PPM;
+    var angle = radToDeg(Math.atan2(slope, 1))
+    var LONG_RANGE = 2200 * PPM
+    var MED_RANGE = 1300 * PPM
 
-    var angleX = angle;
-    var angleY = 90;
-    var angleZ = 180 - angleX - angleY;
+    var angleX = angle
+    var angleY = 90
+    var angleZ = 180 - angleX - angleY
 
-    var yLongRangeOffset = LONG_RANGE * Math.sin(degToRad(90)) / Math.sin(degToRad(angleZ));
-    var yMedRangeOffset = MED_RANGE * Math.sin(degToRad(90)) / Math.sin(degToRad(angleZ));
+    var yLongRangeOffset = LONG_RANGE * Math.sin(degToRad(90)) / Math.sin(degToRad(angleZ))
+    var yMedRangeOffset = MED_RANGE * Math.sin(degToRad(90)) / Math.sin(degToRad(angleZ))
 
     // TODO: conform to map bounds
     var buildPathPolygons = function(yOffset, color) {
@@ -201,10 +218,10 @@ var _onMouseUp = function(event) {
             ],
             { 
                 color: color,
-                weight: 1
+                weight: 1,
             }
-        );
-        north.addTo(map);
+        )
+        north.addTo(map)
         
         var south = L.polygon(
             [
@@ -214,37 +231,37 @@ var _onMouseUp = function(event) {
                 color: color,
                 weight: 1
             }
-        );
-        south.addTo(map);
+        )
+        south.addTo(map)
 
-        return [north, south];
+        return [north, south]
     }
 
-    longRangePolygons = buildPathPolygons(yLongRangeOffset, "blue");
-    medRangePolygons = buildPathPolygons(yMedRangeOffset, "orange");
-    pathLine = L.polyline([[leftIntercept, 0], [rightIntercept, MAP_WIDTH_PX]], { color: "white" });
-    pathLine.addTo(map);
+    longRangePolygons = buildPathPolygons(yLongRangeOffset, "blue")
+    medRangePolygons = buildPathPolygons(yMedRangeOffset, "orange")
+    pathLine = L.polyline([[leftIntercept, 0], [rightIntercept, MAP_WIDTH_PX]], { color: "white", noClip: true })
+    pathLine.addTo(map)
 
-    var randomPoint = map.rollDropZone();
-    map.setView(randomPoint, -2, { animate: true, duration: 1.0 });
+    var randomPoint = map.rollDropZone()
+    map.setView(randomPoint, -2, { animate: true, duration: 0.5 })
     map.hideMarkerLines()
-    map.hideHelpText();
+    map.hideHelpText()
 
     if (!map.rollBtnControl) {
-        new RollBtn({ position: 'topleft' }).addTo(map);
+        new RollBtn({ position: 'topleft' }).addTo(map)
     }
 
     if (startCircle) {
-        startCircle.remove();
-        startCircle = null;
+        startCircle.remove()
+        startCircle = null
     }
     if (dragLine) {
-        dragLine.remove();
-        dragLine = null;
+        dragLine.remove()
+        dragLine = null
     }
 
-    map.dragging.enable();
-    dragging = false;
+    map.dragging.enable()
+    dragging = false
 }
 
 var _onMouseMove = function(event) {
@@ -252,10 +269,10 @@ var _onMouseMove = function(event) {
     
     if (dragging) {
         if (dragLine) {
-            dragLine.remove();
+            dragLine.remove()
         }
-        dragLine = L.polyline([startCircle.getLatLng(), event.latlng], { color: "white" });
-        dragLine.addTo(map);
+        dragLine = L.polyline([startCircle.getLatLng(), event.latlng], { color: "white" })
+        dragLine.addTo(map)
     }
 }
 
@@ -263,50 +280,48 @@ var _softReset = function() {
     var map = this
 
     if (startCircle) {
-        startCircle.remove();
-        startCircle = null;
+        startCircle.remove()
+        startCircle = null
     }
     if (dragLine) {
-        dragLine.remove();
-        dragLine = null;
+        dragLine.remove()
+        dragLine = null
     }
     if (dropCircle) {
-        dropCircle.remove();
-        dropCircle = null;
+        dropCircle.remove()
+        dropCircle = null
     }
-    dragging = false;
-
-    map.fitBounds(BOUNDS, { animate: true, duration: 1.0 });
+    dragging = false
 }
 
 var _hardReset = function() {
     var map = this
 
     if (startCircle) {
-        startCircle.remove();
-        startCircle = null;
+        startCircle.remove()
+        startCircle = null
     }
     if (dragLine) {
-        dragLine.remove();
-        dragLine = null;
+        dragLine.remove()
+        dragLine = null
     }
     if (pathLine) {
-        pathLine.remove();
-        pathLine = null;
+        pathLine.remove()
+        pathLine = null
     }
     if (longRangePolygons) {
-        longRangePolygons[0].remove();
-        longRangePolygons[1].remove();
-        longRangePolygons = null;
+        longRangePolygons[0].remove()
+        longRangePolygons[1].remove()
+        longRangePolygons = null
     }
     if (medRangePolygons) {
-        medRangePolygons[0].remove();
-        medRangePolygons[1].remove();
-        medRangePolygons = null;
+        medRangePolygons[0].remove()
+        medRangePolygons[1].remove()
+        medRangePolygons = null
     }
     if (dropCircle) {
-        dropCircle.remove();
-        dropCircle = null;
+        dropCircle.remove()
+        dropCircle = null
     }
     if (map.rollBtnControl) {
         map.rollBtnControl.remove()
@@ -318,4 +333,4 @@ var _hardReset = function() {
     map.fitBounds(BOUNDS)
 }
 
-export default buildMap;
+export default buildMap
