@@ -26,7 +26,7 @@ const VALID_DROP_ZONES = L.polygon(
     ]
 )
 
-let startCircle = null
+var startCircle = null
 var dragLine = null
 var pathLine = null
 var dragging = false
